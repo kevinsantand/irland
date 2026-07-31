@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Irlande · 30 août – 8 sept 2026</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<style>
+  :root{
+    --moss:#2B3A2E;
+    --moss-deep:#151C17;
+    --ink:#1C2321;
+    --parchment:#EFEAD9;
+    --card:#FBF8F0;
+    --mist:#7C93A3;
+    --mist-pale:#DCE4E8;
+    --gorse:#E8A33D;
+    --gorse-deep:#C6821F;
+    --peat:#6B4A34;
+    --line:#D8D1BC;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Menlo", "Consolas", monospace;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--parchment);
+    color:var(--ink);
+    font-family:var(--sans);
+    padding-bottom:76px;
+    min-height:100vh;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+
+  header.top{
+    background:linear-gradient(180deg, var(--moss) 0%, var(--moss-deep) 100%);
+    color:var(--parchment);
+    padding:18px 18px 14px;
+    position:sticky; top:0; z-index:20;
+    box-shadow:0 4px 14px rgba(0,0,0,.18);
+  }
+  .top .eyebrow{
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--gorse);
+    margin:0 0 4px;
+  }
+  .top h1{
+    margin:0;
+    font-size:22px;
+    font-weight:800;
+    letter-spacing:-.01em;
+    line-height:1.15;
+  }
+  .top .sub{
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--mist-pale);
+    margin-top:5px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  #statusBanner{
+    margin-top:12px;
+    background:rgba(232,163,61,.14);
+    border:1px solid rgba(232,163,61,.4);
+    color:var(--gorse);
+    font-family:var(--mono);
+    font-size:12px;
+    padding:8px 10px;
+    border-radius:6px;
+    letter-spacing:.02em;
+  }
+
+  .trail-wrap{
+    background:var(--moss-deep);
+    padding:16px 0 12px;
+    position:sticky; top:0; z-index:19;
+  }
+  .trail-scroll{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    padding:6px 18px 4px;
+    scrollbar-width:none;
+  }
+  .trail-scroll::-webkit-scrollbar{display:none;}
+  .trail-row{
+    display:flex;
+    align-items:flex-end;
+    gap:0;
+    width:max-content;
+    min-width:100%;
+  }
+  .stop{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    width:76px;
+    flex:0 0 auto;
+    position:relative;
+    background:none;
+    border:none;
+    padding:0;
+    cursor:pointer;
+    color:inherit;
+  }
+  .stop .connector{
+    height:2px;
+    width:100%;
+    background:rgba(220,228,232,.25);
+    position:absolute;
+    top:19px;
+    left:-38px;
+    z-index:0;
+  }
+  .stop:first-child .connector{display:none;}
+  .stop .dot{
+    width:38px; height:38px;
+    border-radius:50%;
+    background:var(--moss);
+    border:1.5px solid var(--mist);
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px;
+    z-index:1;
+    transition:transform .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .stop:nth-child(even){ margin-bottom:14px; }
+  .stop:nth-child(odd){ margin-bottom:0px; }
+  .stop .lbl{
+    font-family:var(--mono);
+    font-size:9.5px;
+    letter-spacing:.03em;
+    color:var(--mist-pale);
+    margin-top:6px;
+    text-align:center;
+    line-height:1.25;
+    max-width:72px;
+  }
+  .stop .daynum{
+    font-family:var(--mono);
+    font-size:9px;
+    color:var(--gorse);
+    letter-spacing:.08em;
+  }
+  .stop.active .dot{
+    background:var(--gorse);
+    border-color:var(--gorse);
+    transform:scale(1.12);
+  }
+  .stop.active .lbl{ color:#fff; font-weight:700; }
+  .stop.past .dot{ opacity:.45; }
+  .stop.past .lbl{ opacity:.45; }
+
+  nav.tabbar{
+    position:fixed; bottom:0; left:0; right:0;
+    background:var(--moss-deep);
+    display:flex;
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+    z-index:30;
+    border-top:1px solid rgba(255,255,255,.08);
+  }
+  nav.tabbar button{
+    flex:1;
+    background:none; border:none;
+    color:var(--mist-pale);
+    font-family:var(--sans);
+    font-size:10.5px;
+    padding:8px 2px 6px;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    cursor:pointer;
+    border-radius:8px;
+  }
+  nav.tabbar button .ic{ font-size:18px; }
+  nav.tabbar button.active{ color:var(--gorse); background:rgba(232,163,61,.1); }
+
+  main{ padding:16px; max-width:640px; margin:0 auto; }
+  .view{ display:none; }
+  .view.active{ display:block; animation:fade .25s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+
+  .daycard{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    overflow:hidden;
+    margin-bottom:14px;
+  }
+  .daycard .head{
+    background:var(--moss);
+    color:var(--parchment);
+    padding:14px 16px;
+  }
+  .daycard .head .date{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--gorse);
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  .daycard .head h2{
+    margin:3px 0 0;
+    font-size:19px;
+    line-height:1.25;
+  }
+  .daymeta{
+    display:flex; gap:8px; flex-wrap:wrap;
+    margin:12px 16px 0;
+  }
+  .daymeta .meta-chip{
+    flex:1 1 auto;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:7px 10px;
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--ink);
+    min-width:120px;
+  }
+  .daymeta .meta-chip .l{ color:var(--peat); text-transform:uppercase; letter-spacing:.05em; font-size:9.5px; display:block; margin-bottom:2px; }
+  .drive-warn{
+    margin:12px 16px 0;
+    background:#FDECEC;
+    border:1.5px solid #C0503F;
+    color:#8C3324;
+    border-radius:8px;
+    padding:9px 11px;
+    font-size:12px;
+    line-height:1.5;
+  }
+
+  .hotel-chip{
+    margin:12px 16px 4px;
+    background:var(--mist-pale);
+    border:1px solid var(--mist);
+    border-radius:8px;
+    padding:9px 10px;
+    font-size:12.5px;
+  }
+  .hotel-chip .row1{ display:flex; justify-content:space-between; gap:8px; align-items:center; }
+  .hotel-chip .name{ font-weight:700; }
+  .hotel-chip .price{ font-family:var(--mono); color:var(--peat); white-space:nowrap; }
+  .hotel-chip .addr{ font-size:11px; color:var(--peat); margin-top:4px; }
+  .hotel-chip .noaddr{ font-size:11px; color:var(--peat); margin-top:4px; font-style:italic; }
+
+  .segment{ padding:14px 16px; border-top:1px dashed var(--line); }
+  .segment:first-of-type{ border-top:none; }
+  .segment .seg-label{
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--peat);
+    margin:0 0 6px;
+  }
+  .segment .seg-title{
+    font-weight:700;
+    font-size:15px;
+    margin:0 0 6px;
+  }
+  .segment ul{ margin:0 0 8px; padding-left:18px; }
+  .segment li{ font-size:14px; line-height:1.5; margin-bottom:3px; }
+
+  .navchips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  a.navchip{
+    display:inline-flex; align-items:center; gap:5px;
+    background:var(--moss); color:var(--parchment);
+    text-decoration:none;
+    font-family:var(--mono);
+    font-size:11px;
+    padding:6px 9px;
+    border-radius:20px;
+    border:1px solid var(--gorse);
+  }
+  a.navchip:active{ background:var(--gorse-deep); }
+  a.navchip .go{ color:var(--gorse); }
+
+  .callout{
+    margin:14px 16px 16px;
+    background:linear-gradient(135deg, #FFF3DF, #FCEBC8);
+    border:1.5px solid var(--gorse);
+    border-radius:10px;
+    padding:12px 14px;
+  }
+  .callout h3{ margin:0 0 6px; font-size:14.5px; color:var(--gorse-deep); }
+  .callout p{ margin:0 0 8px; font-size:13px; line-height:1.5; }
+  .callout .kv{ font-family:var(--mono); font-size:11.5px; margin-bottom:2px; }
+  .callout .quote{
+    margin-top:8px;
+    font-style:italic;
+    font-size:12.5px;
+    background:#fff;
+    border-left:3px solid var(--gorse);
+    padding:8px 10px;
+    border-radius:0 6px 6px 0;
+  }
+
+  .note{
+    margin:0 16px 16px;
+    font-size:12.5px;
+    color:var(--peat);
+    background:rgba(107,74,52,.08);
+    border-radius:8px;
+    padding:10px 12px;
+    line-height:1.5;
+  }
+
+  .daynav{
+    display:flex; justify-content:space-between; gap:10px; margin-bottom:16px;
+  }
+  .daynav button{
+    flex:1;
+    background:var(--moss);
+    color:var(--parchment);
+    border:none;
+    border-radius:8px;
+    padding:10px;
+    font-family:var(--mono);
+    font-size:12px;
+    cursor:pointer;
+  }
+  .daynav button:disabled{ opacity:.3; }
+
+  h2.section-title{
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-family:var(--mono);
+    color:var(--peat);
+    margin:4px 0 10px;
+  }
+
+  table.tbl{
+    width:100%;
+    border-collapse:collapse;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    overflow:hidden;
+    font-size:12.5px;
+    margin-bottom:14px;
+  }
+  table.tbl th{
+    background:var(--moss);
+    color:var(--parchment);
+    text-align:left;
+    padding:8px 8px;
+    font-family:var(--mono);
+    font-weight:600;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+  table.tbl td{
+    padding:8px 8px;
+    border-top:1px solid var(--line);
+  }
+  table.tbl tr:last-child td{
+    font-weight:700;
+    background:var(--mist-pale);
+  }
+
+  .hotel-card{
+    background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:12px 14px; margin-bottom:10px;
+  }
+  .hotel-card .row1{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .hotel-card .l .nm{ font-weight:700; font-size:14px; }
+  .hotel-card .l .dt{ font-family:var(--mono); font-size:11px; color:var(--peat); margin-top:2px;}
+  .hotel-card .r{ text-align:right; font-family:var(--mono); }
+  .hotel-card .r .pr{ font-weight:700; font-size:14px; }
+  .hotel-card .r .st{ font-size:10.5px; color:#2E7D46; }
+  .hotel-card .addrline{ font-size:11.5px; color:var(--peat); margin-top:8px; }
+  .hotel-card .navchips{ margin-top:8px; }
+
+  .budget-total{
+    background:var(--moss); color:var(--parchment);
+    border-radius:10px; padding:14px 16px; margin:14px 0;
+  }
+  .budget-total .big{ font-family:var(--mono); font-size:26px; color:var(--gorse); font-weight:700; }
+  .budget-total .small{ font-size:12px; color:var(--mist-pale); margin-top:4px; line-height:1.5;}
+
+  .checklist-group{ margin-bottom:18px; }
+  .checklist-group h3{
+    font-size:13px; text-transform:uppercase; letter-spacing:.06em;
+    font-family:var(--mono); margin:0 0 8px;
+  }
+  .checklist-group.done h3{ color:#2E7D46; }
+  .checklist-group.todo h3{ color:#C6821F; }
+  .checklist-group.pack h3{ color:var(--mist); }
+  label.chk{
+    display:flex; align-items:flex-start; gap:9px;
+    background:var(--card); border:1px solid var(--line);
+    border-radius:8px; padding:9px 11px; margin-bottom:6px;
+    font-size:13.5px; line-height:1.4;
+  }
+  label.chk input{ margin-top:2px; width:16px; height:16px; accent-color:var(--gorse-deep); flex:0 0 auto; }
+  label.chk.checked{ text-decoration:line-through; opacity:.55; }
+
+  #mapView{
+    height:calc(100vh - 240px);
+    min-height:420px;
+    border-radius:12px;
+    overflow:hidden;
+    border:1px solid var(--line);
+    background:var(--mist-pale);
+  }
+  .map-note{
+    font-size:11.5px; color:var(--peat);
+    background:rgba(107,74,52,.08);
+    border-radius:8px; padding:8px 10px;
+    margin-bottom:10px; line-height:1.5;
+  }
+  .map-legend{
+    display:flex; gap:10px; flex-wrap:wrap;
+    margin-top:10px; font-size:11px; font-family:var(--mono);
+    color:var(--peat);
+  }
+  .map-legend span{ display:inline-flex; align-items:center; gap:4px; }
+  .map-legend .sw{ width:10px; height:10px; border-radius:50%; display:inline-block; }
+  .divmarker{
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-family:var(--mono); font-weight:700; font-size:10px;
+    border-radius:50%; border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.4);
+  }
+  .leaflet-popup-content{ font-family:var(--sans); font-size:12.5px; }
+  .leaflet-popup-content b{ font-size:13px; }
+  .popup-nav{
+    display:inline-block; margin-top:6px;
+    background:var(--moss); color:#fff !important;
+    text-decoration:none; font-family:var(--mono); font-size:11px;
+    padding:4px 8px; border-radius:14px;
+  }
+
+  footer.credit{
+    text-align:center;
+    font-family:var(--mono);
+    font-size:10.5px;
+    color:var(--peat);
+    padding:20px 16px 8px;
+    opacity:.7;
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <p class="eyebrow">☘ Programme de voyage</p>
+  <h1>Voyage en Irlande</h1>
+  <div class="sub">
+    <span>30 août – 8 sept 2026</span>
+    <span>·</span>
+    <span>Kevin · Sophie · Nadine</span>
+  </div>
+  <div id="statusBanner"></div>
+</header>
+
+<div class="trail-wrap">
+  <div class="trail-scroll">
+    <div class="trail-row" id="trailRow"></div>
+  </div>
+</div>
+
+<main>
+
+  <section id="view-itinerary" class="view active">
+    <div class="daynav">
+      <button id="prevDay">← Veille</button>
+      <button id="nextDay">Lendemain →</button>
+    </div>
+    <div id="dayDetail"></div>
+  </section>
+
+  <section id="view-hotels" class="view">
+    <h2 class="section-title">Hôtels — 9 nuits, tout confirmé sur Booking</h2>
+    <div id="hotelsList"></div>
+    <div class="budget-total">
+      <div class="small">TOTAL HÉBERGEMENT</div>
+      <div class="big">2 519 €</div>
+    </div>
+  </section>
+
+  <section id="view-budget" class="view">
+    <h2 class="section-title">Budget · 3 personnes</h2>
+    <table class="tbl">
+      <tr><th>Poste</th><th>Détail</th><th>Montant</th></tr>
+      <tr><td>✈️ Vols</td><td>Nîmes ↔ Dublin, réservés</td><td>Inclus</td></tr>
+      <tr><td>🚗 Voiture</td><td>9 jours · ~25 €/j + assurance + carburant</td><td>~350 €</td></tr>
+      <tr><td>🏨 Hôtels</td><td>9 nuits, 7 réservations confirmées</td><td>2 519 €</td></tr>
+      <tr><td>🍽 Repas</td><td>3 pers × 10 j × 28 €/pers (pubs)</td><td>~840 €</td></tr>
+      <tr><td>🎫 Entrées</td><td>Kilkenny, Cashel, Muckross, Cliffs, Kylemore, EPIC, Trinity</td><td>~220 €</td></tr>
+      <tr><td>☕ Divers</td><td>Cafés, souvenirs, tips, parking</td><td>~120 €</td></tr>
+      <tr><td colspan="2">TOTAL POUR 3 PERSONNES</td><td>~4 049 €</td></tr>
+    </table>
+    <p class="note">💡 Soit environ 1 575 €/pers pour le couple, et ~900 € pour Nadine (chambre simple moins chère). Tous les hôtels incluent l'annulation gratuite.</p>
+  </section>
+
+  <section id="view-checklist" class="view">
+    <div class="checklist-group done">
+      <h3>✅ Déjà réservé</h3>
+      <div id="chk-done"></div>
+    </div>
+    <div class="checklist-group todo">
+      <h3>🔴 À faire maintenant</h3>
+      <div id="chk-todo"></div>
+    </div>
+    <div class="checklist-group pack">
+      <h3>🧳 À emporter</h3>
+      <div id="chk-pack"></div>
+    </div>
+  </section>
+
+  <section id="view-map" class="view">
+    <p class="map-note">🗺 Tous les points du voyage sur une carte — nécessite une connexion internet pour charger la carte (contrairement au reste de l'appli). Tape un point pour voir le nom et lancer l'itinéraire.</p>
+    <div id="mapView"></div>
+    <div class="map-legend">
+      <span><i class="sw" style="background:#E8A33D"></i>Hôtels</span>
+      <span><i class="sw" style="background:#2B3A2E"></i>Visites, pubs & restos</span>
+    </div>
+  </section>
+
+</main>
+
+<nav class="tabbar">
+  <button data-view="itinerary" class="active"><span class="ic">☘</span>Itinéraire</button>
+  <button data-view="hotels"><span class="ic">🏨</span>Hôtels</button>
+  <button data-view="budget"><span class="ic">💶</span>Budget</button>
+  <button data-view="checklist"><span class="ic">✓</span>Checklist</button>
+  <button data-view="map"><span class="ic">🗺</span>Carte</button>
+</nav>
+
+<footer class="credit">Bon voyage — que la route se lève à votre rencontre ☘</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const TRIP_START = new Date(2026,7,30);
+const TRIP_END   = new Date(2026,8,8);
+
+function nav(lat,lng,placeId){
+  let url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+  if(placeId) url += `&destination_place_id=${placeId}`;
+  return url;
+}
+
+const days = [
+  { n:1, date:"30 août", weekday:"Dimanche", icon:"✈️", short:"Wicklow", title:"Cap direct sur les Wicklow !",
+    hotel:{name:"Tudor Lodge — Laragh", price:"323 €", addr:"Brockagh, Laragh, Co. Wicklow, A67 W654", lat:53.004025, lng:-6.298401, pid:"ChIJO_RCHoG9Z0gRF8jawm_8kVI"},
+    drive:{dist:"~60 km", time:"~1h00", detail:"Aéroport → Laragh, via l'arrêt café à Malahide"},
+    sun:{rise:"06h32", set:"20h22"},
+    driveWarn:"🚗 Premier trajet en Irlande : on conduit à GAUCHE. Aux ronds-points, priorité à ceux déjà engagés (sens horaire), et les clignotants/essuie-glaces sont inversés sur une voiture de location UK/IRL. Limitations en km/h. Prenez 10 min tranquilles sur le parking de l'aéroport avant de démarrer.",
+    segments:[
+      {label:"12h40 · Aéroport", title:"Arrivée Dublin (DUB)", items:["Récupération bagages + voiture","Arrêt café à Malahide (10 min)","Cap vers Laragh (45 min)"],
+        places:[{name:"Aéroport de Dublin", lat:53.425632, lng:-6.257375, pid:"ChIJLxmTab4RZ0gRVfMlt7UbElU"}]},
+      {label:"15h30 · Arrivée", title:"Glendalough / Laragh", items:["Installation au Tudor Lodge","Balade douce au lac · Ruines monastiques","Premiers cerfs sauvages !"],
+        places:[{name:"Glendalough Visitor Centre", lat:53.010428, lng:-6.324100, pid:"ChIJb52WasyXZ0gRgAUcJAGSDek"}]},
+      {label:"Soir", title:"Dîner à Laragh", items:["The Wicklow Heather (pub local)","Fish & chips ou Irish stew","~18 €/pers · Coucher tôt"],
+        places:[{name:"Wicklow Heather Restaurant", lat:53.008741, lng:-6.300706, pid:"ChIJszo8jH-9Z0gRnE3aQum3Dzs"}]}
+    ]},
+  { n:2, date:"31 août", weekday:"Lundi", icon:"🏔", short:"Kilkenny", title:"Glendalough → Kilkenny",
+    hotel:{name:"The Orchard House — Kilkenny", price:"200 €", addr:"New Orchard Rd, Golf Links Rd, Newtown, Kilkenny, R95 XRC4", lat:52.668077, lng:-7.235871, pid:"ChIJhQoFvsYhe0gRYQOKQfp1Nnk"},
+    drive:{dist:"~110 km", time:"~1h45", detail:"Laragh → Kilkenny"},
+    sun:{rise:"06h34", set:"20h19"},
+    segments:[
+      {label:"Matin", title:"Glendalough", items:["Balade entre les deux lacs · Sentiers plats","Ruines monastiques VIᵉ s. · Cerfs sauvages","Pique-nique recommandé au bord de l'eau"],
+        places:[{name:"Glendalough Visitor Centre", lat:53.010428, lng:-6.324100, pid:"ChIJb52WasyXZ0gRgAUcJAGSDek"}]},
+      {label:"Après-midi · 1h30", title:"Arrivée Kilkenny", items:["Installation à l'hôtel","Balade dans les ruelles médiévales","Café dans le centre historique"]},
+      {label:"Soir", title:"The Hole in the Wall", items:["Pub médiéval authentique · Medieval Mile","Fish & chips, chowder · ~18 €/pers","Sessions trad possibles"],
+        places:[{name:"Hole in the Wall", lat:52.651383, lng:-7.253312, pid:"ChIJj8zuYSkxXUgRKl9n06OLz30"}]}
+    ]},
+  { n:3, date:"1er sept", weekday:"Mardi", icon:"🏰", short:"Cashel", title:"Kilkenny → Rock of Cashel → Killarney",
+    hotel:{name:"Cillcearn House — Killarney (2 nuits)", price:"500 €", addr:"Ballycasheen Road, Ballycasheen, Killarney, Co. Kerry", lat:52.057122, lng:-9.472483, pid:"ChIJP0wsoHo8RUgRfimpfw9U66Y"},
+    drive:{dist:"~200 km", time:"~2h45", detail:"Kilkenny → Cashel (~45 min) → Killarney (~2h)"},
+    sun:{rise:"06h50", set:"20h32"},
+    segments:[
+      {label:"Matin", title:"Kilkenny Castle", items:["9h30 · Château XIIᵉ s. restauré","Parc plat autour · 12 €/adulte","Vue sur la rivière Nore"],
+        places:[{name:"Kilkenny Castle", lat:52.650463, lng:-7.249297, pid:"ChIJ8Rdbq58wXUgRSIkh8uhr8sg"}]},
+      {label:"Milieu journée · 1h15", title:"Rock of Cashel ⭐", items:["Cathédrale & tour ronde XIIᵉ s.","Site médiéval emblématique · 10 €/adulte","Déjeuner au village (~12 €)"],
+        places:[{name:"Rock of Cashel", lat:52.520076, lng:-7.890452, pid:"ChIJ9UGKcN7LXEgR3YC2sSpHPsw"}]},
+      {label:"Fin d'après-midi · 1h30", title:"Arrivée Killarney", items:["Installation pour 2 nuits","Repos · Dîner à l'hôtel ou Tatler Jack, ~18 €/pers"],
+        places:[{name:"Tatler Jack", lat:52.058566, lng:-9.508515, pid:"ChIJExQSCQw8RUgREfLpR5lxUGE"}]}
+    ]},
+  { n:4, date:"2 sept", weekday:"Mercredi", icon:"🦌", short:"Killarney NP", title:"Killarney National Park — journée complète",
+    hotel:{name:"Cillcearn House — Killarney (2ᵉ nuit)", price:null, addr:"Ballycasheen Road, Ballycasheen, Killarney, Co. Kerry", lat:52.057122, lng:-9.472483, pid:"ChIJP0wsoHo8RUgRfimpfw9U66Y"},
+    drive:{dist:"~15 km", time:"peu de route", detail:"Journée dans le parc, sans voiture"},
+    sun:{rise:"06h52", set:"20h30"},
+    segments:[
+      {label:"Matin", title:"Torc Waterfall → Muckross House", items:["Sentier 15 min (plat !), cascade magnifique","→ Muckross House & ses jardins","15 €/adulte · Domaine superbe"],
+        places:[{name:"Torc Waterfall", lat:52.003367, lng:-9.505807, pid:"ChIJRX0u6Ng9RUgRavm3XntqMXw"},{name:"Muckross House", lat:52.018070, lng:-9.504136, pid:"ChIJQ1dkftM9RUgRp-MTG7w_tZc"}]},
+      {label:"Après-midi", title:"Jaunting Car 🐴", items:["Calèche traditionnelle sur le lac · ~15 €/pers","Vue sur les îles · Cerfs sauvages garantis","→ Ross Castle (bord du lac)"],
+        places:[{name:"Ross Castle", lat:52.041249, lng:-9.531438, pid:"ChIJ25JR0AQ8RUgRZoZO0KdIzVs"}]},
+      {label:"Soir", title:"Pub trad à Killarney", items:["O'Connor's Bar · Sessions gratuites","Irish stew, soda bread · ~20 €/pers"],
+        places:[{name:"O'Connor's Traditional Pub", lat:52.059788, lng:-9.509623, pid:"ChIJBXd-9Ag8RUgRJf32otzfRjE"}]}
+    ],
+    note:"Journée sans voiture — tout se fait à pied ou en calèche dans le parc. Profitez pleinement de cette journée nature !"},
+  { n:5, date:"3 sept", weekday:"Jeudi", icon:"⭐", short:"Doolin", title:"Killarney → Adare → Doolin — le clou du voyage",
+    hotel:{name:"Dubhlinn House — Doolin", price:"300 €", addr:"12, Doolin, Co. Clare, V95 VX46", lat:53.017052, lng:-9.380188, pid:"ChIJ48cPFFcHW0gRH6qqcaU-dHI"},
+    drive:{dist:"~240 km", time:"~3h10", detail:"Killarney → Adare (~1h20) → Doolin (~1h50)"},
+    sun:{rise:"06h53", set:"20h27"},
+    segments:[
+      {label:"Matin · départ 10h", title:"Route vers le nord", items:["Killarney → Adare · 1h30","Adare : maisons chaumières, café léger ~10 €","Photos du plus beau village d'Irlande"],
+        places:[{name:"Adare", lat:52.563652, lng:-8.792528, pid:"ChIJWzmiMQ5GW0gRUKQxl6nHAAo"}]},
+      {label:"Après-midi · arrivée 15h30", title:"Doolin", items:["Installation au Dubhlinn House","Balade au port (30 min, vue Atlantique)","Repos avant la grande soirée !"]},
+      {label:"Soirée · 19h", title:"McGann's Pub", items:["Dîner dès 19h · chowder, stew · ~22 €","Sessions trad dès 21h30","Violon, flûte, bodhrán, uilleann pipes"],
+        places:[{name:"McGann's Pub", lat:53.018328, lng:-9.372072, pid:"ChIJhdMFPFkHW0gRtMjyvLffMbk"}]}
+    ],
+    callout:{
+      title:"⭐ McGann's Pub, Doolin — l'expérience centrale du voyage",
+      text:"L'un des pubs de sessions traditionnelles les plus authentiques d'Irlande — joué par de vrais musiciens locaux. Violon, flûte irlandaise, bodhrán et uilleann pipes : l'âme de l'Irlande vivante.",
+      kv:["📞 +353 (0)65 707 4133","🌐 mcgannsdoolin.com","📍 Teergonean, Doolin, Co. Clare, V95 TKF8","🕐 Arriver 19h–19h30 pour dîner tranquille","🎵 Musique vers 21h30","💶 ~22 €/pers sans alcool","⚠️ Réserver à l'avance pour 3 pers."],
+      quote:"« Réserver table pour 3 personnes, jeudi 3 septembre, vers 19h, soirée sessions traditionnelles »",
+      places:[{name:"McGann's Pub", lat:53.018328, lng:-9.372072, pid:"ChIJhdMFPFkHW0gRtMjyvLffMbk"}]
+    }},
+  { n:6, date:"4 sept", weekday:"Vendredi", icon:"🌊", short:"Moher · Galway", title:"Falaises de Moher → Galway",
+    hotel:{name:"The Paddock — Galway (2 nuits)", price:"480 €", addr:null},
+    drive:{dist:"~90 km", time:"~1h30", detail:"Doolin → Cliffs of Moher (~15 min) → Galway (~1h15)"},
+    sun:{rise:"06h55", set:"20h25"},
+    segments:[
+      {label:"Matin · 15 min", title:"Cliffs of Moher ⭐", items:["10 €/adulte · 1h30 de visite","Visitor Centre avec café et terrasse","Vue sur les falaises de 214 m"],
+        places:[{name:"Cliffs of Moher Experience", lat:52.970740, lng:-9.425826, pid:"ChIJcUCLuwEBW0gRBjEKQ7h0a7A"}]},
+      {label:"Midi", title:"Déjeuner à Doolin", items:["Seafood chowder vue mer · ~15 €","→ Route vers Galway (1h15)","Arrivée vers 14h30–15h"]},
+      {label:"Après-midi & soir", title:"Galway", items:["Shop Street, marché artisanal","McDonagh's (fruits de mer) · ~20 €","Musiciens de rue · 1ʳᵉ nuit The Paddock"],
+        places:[{name:"McDonagh's", lat:53.270939, lng:-9.054382, pid:"ChIJTy0MGfuWW0gRTLab4kb6aMA"}]}
+    ],
+    note:"⚠️ Adresse exacte de The Paddock non retrouvée automatiquement — vérifie la confirmation Booking pour naviguer jusqu'à l'hébergement."},
+  { n:7, date:"5 sept", weekday:"Samedi", icon:"🌿", short:"Kylemore", title:"Galway & Abbaye de Kylemore",
+    hotel:{name:"The Paddock — Galway (2ᵉ nuit)", price:null, addr:null},
+    drive:{dist:"~160 km", time:"~2h20 (aller-retour)", detail:"Galway ↔ Kylemore Abbey, ~1h10 chaque sens"},
+    sun:{rise:"06h57", set:"20h23"},
+    segments:[
+      {label:"Matin", title:"Galway centre", items:["Flâner à Eyre Square","Marché du samedi très animé","Brunch irlandais dans un café"]},
+      {label:"Après-midi", title:"Abbaye de Kylemore ⭐", items:["45 min de Galway · 13 €/adulte","Château-abbaye à couper le souffle","Jardins plats · Lac miroir · Connemara"],
+        places:[{name:"Kylemore Abbey", lat:53.561639, lng:-9.889313, pid:"ChIJ6Q5Npx4vWkgRqTFcJyqzpPE"}]},
+      {label:"Soir", title:"Retour Galway", items:["Dîner pub · ~18 €/pers","2ᵉ nuit The Paddock","Préparer les bagages pour Dublin demain"]}
+    ],
+    note:"Kylemore Abbey : jardins victoriens sur fond de montagne irlandaise — l'un des sites les plus photographiés du pays. Totalement accessible, prévoir 2h sur place."},
+  { n:8, date:"6 sept", weekday:"Dimanche", icon:"🏙", short:"Dublin J1", title:"Dublin — 1er jour · arrivée & Temple Bar",
+    hotel:{name:"Dublin Skylon Hotel (2 nuits)", price:"716 €", addr:"27 Drumcondra Rd Upper, Drumcondra, Dublin 9, D09 V1Y2", lat:53.372725, lng:-6.253063, pid:"ChIJhdXLTyYMZ0gRQcu5pZtmRvk"},
+    drive:{dist:"~215 km", time:"~2h15", detail:"Galway → Dublin"},
+    sun:{rise:"06h43", set:"20h05"},
+    segments:[
+      {label:"Matin · 2h de route", title:"Galway → Dublin", items:["Départ 9h · Arrivée ~11h","Check-in Dublin Skylon Hotel","Direction centre-ville"]},
+      {label:"Après-midi", title:"Dublin centre", items:["Trinity College & Livre de Kells (~16 €)","Dublin Castle (extérieur gratuit)","Balade Temple Bar · St. Stephen's Green"],
+        places:[{name:"Trinity College / Book of Kells", lat:53.343888, lng:-6.256756, pid:"ChIJ3Y7HLZsOZ0gRpE8_XUYbw1A"}]},
+      {label:"Soir", title:"The Brazen Head", items:["Plus vieux pub d'Irlande (1198 !)","Irish stew & Guinness · ~20 €/pers","Ou O'Donoghue's : sessions trad"],
+        places:[{name:"The Brazen Head", lat:53.344933, lng:-6.276332, pid:"ChIJ5wqZWS8MZ0gRq5auJO7NbDE"}]}
+    ]},
+  { n:9, date:"7 sept", weekday:"Lundi", icon:"🏙", short:"Dublin J2", title:"Dublin — 2ᵉ jour · journée pleine",
+    hotel:{name:"Dublin Skylon Hotel (2ᵉ nuit)", price:null, addr:"27 Drumcondra Rd Upper, Drumcondra, Dublin 9, D09 V1Y2", lat:53.372725, lng:-6.253063, pid:"ChIJhdXLTyYMZ0gRQcu5pZtmRvk"},
+    drive:{dist:"~5 km", time:"tout à pied", detail:"Journée dans Dublin, pas de route"},
+    sun:{rise:"06h45", set:"20h03"},
+    segments:[
+      {label:"Matin", title:"EPIC Museum", items:["Musée de l'émigration irlandaise","Très interactif · 20 €/adulte · 1h30","→ Quartier des Docklands"],
+        places:[{name:"EPIC The Irish Emigration Museum", lat:53.348312, lng:-6.248179, pid:"ChIJvwEAK4wOZ0gRZ-4HLJnKYZk"}]},
+      {label:"Après-midi", title:"Libre à Dublin", items:["Shopping Grafton Street","Guinness Storehouse (~26 €) si envie","Phoenix Park : cerfs en liberté, gratuit !"],
+        places:[{name:"Guinness Storehouse", lat:53.341809, lng:-6.286716, pid:"ChIJawXFQIQOZ0gRoucFdZIzGbM"},{name:"Phoenix Park", lat:53.355882, lng:-6.329813, pid:"ChIJe1F08akNZ0gRa1ndmi3YJqE"}]},
+      {label:"Soir · dernière soirée", title:"Devitt's Pub", items:["Sessions trad dès 18h30","Last Irish stew & Guinness · ~20 €/pers","Coucher raisonnable — vol demain !"],
+        places:[{name:"Devitt's Pub", lat:53.335537, lng:-6.265438, pid:"ChIJA4Ky-p8OZ0gRhXikn1xYL6U"}]}
+    ],
+    note:"Lundi à Dublin = ville plus calme, moins touristique. Même hôtel que la veille, pas de re-valiser. Dernière soirée irlandaise !"},
+  { n:10, date:"8 sept", weekday:"Mardi", icon:"✈️", short:"Retour", title:"Retour — Dublin → Nîmes",
+    hotel:null,
+    drive:{dist:"~10 km", time:"~20–30 min", detail:"Dublin Skylon → Aéroport de Dublin"},
+    sun:{rise:"06h47", set:"20h01"},
+    segments:[
+      {label:"9h – 10h", title:"Départ pour l'aéroport", items:["30 min depuis le Dublin Skylon","Restitution voiture de location","Check-in · Vol FR9776 à 13h15"],
+        places:[{name:"Aéroport de Dublin", lat:53.425632, lng:-6.257375, pid:"ChIJLxmTab4RZ0gRVfMlt7UbElU"}]},
+      {label:"10h – 12h30", title:"Aéroport de Dublin", items:["Derniers souvenirs en duty-free","Petit déjeuner à l'aéroport","Embarquement serein"]},
+      {label:"Arrivée 16h35", title:"Nîmes (FNI)", items:["Retour à la maison","Plein de souvenirs plein les yeux 🍀 et l'Irlande plein le cœur !"],
+        places:[{name:"Aéroport de Nîmes", lat:43.762878, lng:4.421748, pid:"ChIJXxIKo1XVtRIRT0-WCpXZi2U"}]}
+    ]}
+];
+
+const hotels = [
+  {name:"Tudor Lodge", place:"Laragh (Glendalough)", dates:"30 août", price:"323 €", addr:"Brockagh, Laragh, Co. Wicklow, A67 W654", lat:53.004025, lng:-6.298401, pid:"ChIJO_RCHoG9Z0gRF8jawm_8kVI"},
+  {name:"The Orchard House", place:"Kilkenny", dates:"31 août", price:"200 €", addr:"New Orchard Rd, Golf Links Rd, Newtown, Kilkenny, R95 XRC4", lat:52.668077, lng:-7.235871, pid:"ChIJhQoFvsYhe0gRYQOKQfp1Nnk"},
+  {name:"Cillcearn House", place:"Killarney", dates:"1–3 sept · 2 nuits", price:"500 €", addr:"Ballycasheen Road, Ballycasheen, Killarney, Co. Kerry", lat:52.057122, lng:-9.472483, pid:"ChIJP0wsoHo8RUgRfimpfw9U66Y"},
+  {name:"Dubhlinn House", place:"Doolin", dates:"3 sept", price:"300 €", addr:"12, Doolin, Co. Clare, V95 VX46", lat:53.017052, lng:-9.380188, pid:"ChIJ48cPFFcHW0gRH6qqcaU-dHI"},
+  {name:"The Paddock", place:"Galway", dates:"4–6 sept · 2 nuits", price:"480 €", addr:null},
+  {name:"Dublin Skylon Hotel", place:"Dublin", dates:"6–8 sept · 2 nuits", price:"716 €", addr:"27 Drumcondra Rd Upper, Drumcondra, Dublin 9, D09 V1Y2", lat:53.372725, lng:-6.253063, pid:"ChIJhdXLTyYMZ0gRQcu5pZtmRvk"}
+];
+
+const checklistDone = [
+  "Vols Nîmes ↔ Dublin (FR9777 / FR9776)",
+  "Tudor Lodge — Laragh (30 août)",
+  "The Orchard House — Kilkenny (31 août)",
+  "Cillcearn House — Killarney (1–3 sept)",
+  "Dubhlinn House — Doolin (3–4 sept)",
+  "The Paddock — Galway (4–6 sept)",
+  "Dublin Skylon Hotel (6–8 sept)",
+  "Voiture de location (Rentalcars ou Sixt)",
+  "Assurance voyage"
+];
+const checklistTodo = [
+  "McGann's Pub Doolin · +353 65 707 4133",
+  "Adresse exacte The Paddock (Galway) à récupérer sur Booking",
+  "Billets Cliffs of Moher en ligne (10 €)",
+  "Billets Kilkenny Castle en ligne (12 €)",
+  "Billets Rock of Cashel en ligne (10 €)",
+  "Muckross House & Gardens (15 €)",
+  "Abbaye de Kylemore (13 €)",
+  "EPIC Museum Dublin en ligne (20 €)",
+  "Trinity College / Livre de Kells (16 €)",
+  "Jaunting Car Killarney (réserver sur place)",
+  "Confirmations hôtels imprimées"
+];
+const checklistPack = [
+  "Imperméable / coupe-vent respirant",
+  "Pull chaud + couches superposables",
+  "Chaussures imperméables confortables",
+  "Adaptateur électrique irlandais (3 fiches)",
+  "Carte bancaire + 400–600 € en cash",
+  "Passeports à jour · Urgences : 112",
+  "Ordonnances & médicaments · Appareil photo !"
+];
+
+function buildMapPoints(){
+  const pts = [];
+  hotels.forEach(h=>{
+    if(h.lat){ pts.push({lat:h.lat,lng:h.lng,name:h.name+' — '+h.place,type:'hotel',pid:h.pid}); }
+    else { pts.push({lat:53.2707,lng:-9.0568,name:h.name+' ('+h.place+') — position approximative, vérifier Booking',type:'hotel',pid:null}); }
+  });
+  days.forEach(d=>{
+    d.segments.forEach(s=>{
+      (s.places||[]).forEach(p=>{
+        pts.push({lat:p.lat,lng:p.lng,name:p.name+' · J'+d.n,type:'stop',pid:p.pid});
+      });
+    });
+    if(d.callout && d.callout.places){
+      d.callout.places.forEach(p=> pts.push({lat:p.lat,lng:p.lng,name:p.name+' · J'+d.n,type:'stop',pid:p.pid}));
+    }
+  });
+  return pts;
+}
+
+let leafletMap = null;
+let mapInitAttempts = 0;
+function initMap(){
+  if(leafletMap) { leafletMap.invalidateSize(); return; }
+  if(typeof L === 'undefined'){
+    mapInitAttempts++;
+    if(mapInitAttempts < 20){
+      setTimeout(initMap, 250);
+      return;
+    }
+    document.getElementById('mapView').innerHTML = '<div style="padding:20px;font-size:13px;color:var(--peat);">Impossible de charger la carte — vérifie ta connexion internet puis réessaie (bouton Carte).</div>';
+    return;
+  }
+  leafletMap = L.map('mapView', {scrollWheelZoom:true});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap',
+    maxZoom: 18
+  }).addTo(leafletMap);
+
+  const pts = buildMapPoints();
+  const bounds = [];
+  const hotelRoute = [];
+
+  pts.forEach(p=>{
+    const color = p.type==='hotel' ? '#E8A33D' : '#2B3A2E';
+    const size = p.type==='hotel' ? 26 : 16;
+    const icon = L.divIcon({
+      className:'',
+      html:`<div class="divmarker" style="width:${size}px;height:${size}px;background:${color};font-size:${p.type==='hotel'?'13px':'0'}">${p.type==='hotel'?'🛏':''}</div>`,
+      iconSize:[size,size],
+      iconAnchor:[size/2,size/2]
+    });
+    const marker = L.marker([p.lat,p.lng], {icon}).addTo(leafletMap);
+    const navUrl = p.pid ? nav(p.lat,p.lng,p.pid) : nav(p.lat,p.lng);
+    marker.bindPopup(`<b>${p.name}</b><br><a class="popup-nav" href="${navUrl}" target="_blank" rel="noopener">🧭 Itinéraire</a>`);
+    bounds.push([p.lat,p.lng]);
+    if(p.type==='hotel') hotelRoute.push([p.lat,p.lng]);
+  });
+
+  if(hotelRoute.length>1){
+    L.polyline(hotelRoute, {color:'#7C93A3', weight:2, dashArray:'6 6', opacity:.8}).addTo(leafletMap);
+  }
+  if(bounds.length){
+    leafletMap.fitBounds(bounds, {padding:[24,24]});
+  } else {
+    leafletMap.setView([53.4,-8], 7);
+  }
+}
+
+let currentDay = 1;
+
+
+function daysBetween(a,b){ return Math.round((b-a)/86400000); }
+
+function detectToday(){
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const banner = document.getElementById('statusBanner');
+  if (today < TRIP_START){
+    const d = daysBetween(today, TRIP_START);
+    banner.textContent = `☘ Départ dans ${d} jour${d>1?'s':''} — le grand tour commence le 30 août`;
+    currentDay = 1;
+  } else if (today > TRIP_END){
+    banner.textContent = `☘ Retour effectué le 8 septembre — bons souvenirs d'Irlande !`;
+    currentDay = 10;
+  } else {
+    const idx = daysBetween(TRIP_START, today) + 1;
+    currentDay = Math.min(Math.max(idx,1),10);
+    banner.textContent = `📍 En ce moment : Jour ${currentDay} sur 10 — ${days[currentDay-1].title}`;
+  }
+}
+
+function renderTrail(){
+  const row = document.getElementById('trailRow');
+  row.innerHTML = '';
+  days.forEach(d=>{
+    const btn = document.createElement('button');
+    btn.className = 'stop' + (d.n===currentDay ? ' active':'') + (d.n<currentDay ? ' past':'');
+    btn.dataset.day = d.n;
+    btn.innerHTML = `<span class="connector"></span>
+      <span class="dot">${d.icon}</span>
+      <span class="lbl"><span class="daynum">J${d.n}</span><br>${d.short}</span>`;
+    btn.addEventListener('click', ()=>{ currentDay=d.n; renderAll(); switchView('itinerary'); });
+    row.appendChild(btn);
+  });
+  const active = row.querySelector('.stop.active');
+  if(active) active.scrollIntoView({inline:'center', block:'nearest'});
+}
+
+function navChipsHtml(places){
+  if(!places || !places.length) return '';
+  return `<div class="navchips">${places.map(p=>
+    `<a class="navchip" href="${nav(p.lat,p.lng,p.pid)}" target="_blank" rel="noopener"><span class="go">🧭</span>${p.name}</a>`
+  ).join('')}</div>`;
+}
+
+function renderDayDetail(){
+  const d = days[currentDay-1];
+  const wrap = document.getElementById('dayDetail');
+  let html = `<div class="daycard">
+    <div class="head">
+      <div class="date">${d.weekday} · ${d.date} · Jour ${d.n}/10</div>
+      <h2>${d.icon} ${d.title}</h2>
+    </div>`;
+  if(d.drive || d.sun){
+    html += `<div class="daymeta">`;
+    if(d.drive){
+      html += `<div class="meta-chip"><span class="l">🚗 route du jour</span>${d.drive.dist} · ${d.drive.time}<br><span style="opacity:.75">${d.drive.detail}</span></div>`;
+    }
+    if(d.sun){
+      html += `<div class="meta-chip"><span class="l">📷 lumière</span>🌅 ${d.sun.rise} · 🌇 ${d.sun.set}<br><span style="opacity:.75">golden hour ≈ 45 min avant/après</span></div>`;
+    }
+    html += `</div>`;
+  }
+  if(d.driveWarn){
+    html += `<div class="drive-warn">${d.driveWarn}</div>`;
+  }
+  if(d.hotel){
+    html += `<div class="hotel-chip">
+      <div class="row1"><span class="name">🛏 ${d.hotel.name}</span>${d.hotel.price ? `<span class="price">${d.hotel.price}</span>`:''}</div>
+      ${d.hotel.addr ? `<div class="addr">📍 ${d.hotel.addr}</div>${navChipsHtml([{name:'Y aller',lat:d.hotel.lat,lng:d.hotel.lng,pid:d.hotel.pid}])}` : `<div class="noaddr">Adresse à vérifier sur Booking</div>`}
+    </div>`;
+  }
+  d.segments.forEach(s=>{
+    html += `<div class="segment">
+      <p class="seg-label">${s.label}</p>
+      <p class="seg-title">${s.title}</p>
+      <ul>${s.items.map(i=>`<li>${i}</li>`).join('')}</ul>
+      ${navChipsHtml(s.places)}
+    </div>`;
+  });
+  if(d.callout){
+    html += `<div class="callout">
+      <h3>${d.callout.title}</h3>
+      <p>${d.callout.text}</p>
+      ${d.callout.kv.map(k=>`<div class="kv">${k}</div>`).join('')}
+      <div class="quote">${d.callout.quote}</div>
+      ${navChipsHtml(d.callout.places)}
+    </div>`;
+  }
+  if(d.note){
+    html += `<div class="note">${d.note}</div>`;
+  }
+  html += `</div>`;
+  wrap.innerHTML = html;
+
+  document.getElementById('prevDay').disabled = currentDay===1;
+  document.getElementById('nextDay').disabled = currentDay===10;
+}
+
+function renderHotels(){
+  const wrap = document.getElementById('hotelsList');
+  wrap.innerHTML = hotels.map(h=>`
+    <div class="hotel-card">
+      <div class="row1">
+        <div class="l"><div class="nm">${h.name}</div><div class="dt">${h.place} · ${h.dates}</div></div>
+        <div class="r"><div class="pr">${h.price}</div><div class="st">✓ confirmé</div></div>
+      </div>
+      ${h.addr ? `<div class="addrline">📍 ${h.addr}</div>${navChipsHtml([{name:'Itinéraire',lat:h.lat,lng:h.lng,pid:h.pid}])}` : `<div class="addrline" style="font-style:italic;">Adresse à confirmer sur ta réservation Booking</div>`}
+    </div>`).join('');
+}
+
+function renderChecklist(){
+  const done = document.getElementById('chk-done');
+  const todo = document.getElementById('chk-todo');
+  const pack = document.getElementById('chk-pack');
+  done.innerHTML = checklistDone.map(t=>`<label class="chk checked"><input type="checkbox" checked disabled>${t}</label>`).join('');
+  todo.innerHTML = checklistTodo.map((t,i)=>`<label class="chk" id="todo-${i}"><input type="checkbox" onchange="this.closest('label').classList.toggle('checked', this.checked)">${t}</label>`).join('');
+  pack.innerHTML = checklistPack.map((t,i)=>`<label class="chk" id="pack-${i}"><input type="checkbox" onchange="this.closest('label').classList.toggle('checked', this.checked)">${t}</label>`).join('');
+}
+
+function renderAll(){
+  renderTrail();
+  renderDayDetail();
+}
+
+function switchView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.toggle('active', b.dataset.view===name));
+  window.scrollTo({top:0, behavior:'instant'});
+  if(name==='map'){ if(!leafletMap) mapInitAttempts = 0; setTimeout(initMap, 50); }
+}
+
+document.querySelectorAll('nav.tabbar button').forEach(b=>{
+  b.addEventListener('click', ()=>switchView(b.dataset.view));
+});
+document.getElementById('prevDay').addEventListener('click', ()=>{ if(currentDay>1){currentDay--; renderAll();} });
+document.getElementById('nextDay').addEventListener('click', ()=>{ if(currentDay<10){currentDay++; renderAll();} });
+
+detectToday();
+renderAll();
+renderHotels();
+renderChecklist();
+</script>
+</body>
+</html>
